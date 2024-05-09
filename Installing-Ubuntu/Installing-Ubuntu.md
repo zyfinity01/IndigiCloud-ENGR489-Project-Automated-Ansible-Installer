@@ -5,7 +5,7 @@ The document "Installing-Ubuntu.md" is a guide on how to install Ubuntu 24.04 LT
 
 Prerequisites: This section should list any prerequisites or requirements for the installation process, such as hardware specifications or software dependencies.
 
-Step 1: Downloading the Ubuntu ISO: This section provides detailed instructions on how to download the Ubuntu 20.04 LTS image from the official Ubuntu website. It also explains how to verify the integrity of the downloaded ISO file.
+Step 1: Downloading the Ubuntu ISO: This section provides detailed instructions on how to download the Ubuntu 24.04 LTS image from the official Ubuntu website. It also explains how to verify the integrity of the downloaded ISO file.
 
 Step 2: Creating a Bootable USB Drive: This section guides the user on how to use the downloaded ISO file to create a bootable USB drive. It also explains how to attach the virtualized CDROM ISO to the server and how to reboot the server remotely.
 
