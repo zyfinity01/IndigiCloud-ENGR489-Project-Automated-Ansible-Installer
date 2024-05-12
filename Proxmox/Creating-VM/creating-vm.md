@@ -57,4 +57,6 @@ Under the server ID (100) and then under the Console tab we get a "video out" of
 
 ![alt text](proxmoxvm-console.png)
 
-Follow ubuntu setup instructions detailed in [How to Install Ubuntu](../../Installing-Ubuntu/Installing-Ubuntu.md) while those instructions are for installing ubuntu on a dedicated server, the instructions are completely identical for a VM setup.
+For the next steps on installing Ubuntu on the newly created VM, refer to [Step 3: Ubuntu Installation](/Installing-Ubuntu/Installing-Ubuntu.md#step-3-ubuntu-installation) in the `Installing-Ubuntu.md` guide.
+
+ While those instructions are for installing ubuntu on a dedicated server, the instructions are completely identical for a VM setup.
