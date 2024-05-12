@@ -33,7 +33,7 @@ Remember to verify the integrity of the downloaded ISO file by checking its chec
 
 ![This image from Ubuntu shows the lifecycle for various versions](ubuntu-image-lifecycle.png)
 
-## Step 2: Creating a Bootable USB Drive
+## Step 2: Creating a Bootable CDROM Drive
 Select ISO image, then click open image and select the ISO file for ubuntu that was previously downloaded to your computer.
 
 Then click plug in, this will make the ISO appear to the server as a bootable CDROM that has been attatched over the network.
@@ -47,6 +47,9 @@ After attatching the CDROM the server needs to be rebooted to be able to see the
 Here the ISO has been detected and try or install ubuntu server can be selected:
 
 ![Image shows boot when the virtual CDROM ISO is detected](selecting-tryinstall-ubuntu-boot.png)
+
+
+## Step 3: Ubuntu Installation
 
 Select the language of choice for ubuntu:
 
@@ -108,7 +111,7 @@ if the system hangs after saying CDROM can't unmount then try entering a random 
 Ubuntu has been installed!
 
 
-## Step 3: Connecting via SSH
+## Step 4: Connecting via SSH
 
 Now that ubuntu is installed, I unplugged the ethernet cable from the IPMI port and then proceeded to plug it into one of the four WAN ports, after doing so my router automatically assigned it an IP address in my local subnet. through this I found the IP address, set it as a static DHCP IP
 
@@ -122,7 +125,7 @@ And here is me connecting via SSH:
 
 ![connecting via ssh](connecting-ssh.png)
 
-## Step 4: Extending the LVM where the ubuntu install is to use all allocated space:
+## Step 5: Extending the LVM where the ubuntu install is to use all allocated space:
 
 
 Find the LV Path variable:
