@@ -122,7 +122,7 @@ And here is me connecting via SSH:
 
 ![connecting via ssh](connecting-ssh.png)
 
-## Step 4: Extending the LVM where the ubuntu install is:
+## Step 4: Extending the LVM where the ubuntu install is to use all allocated space:
 
 
 Find the LV Path variable:
