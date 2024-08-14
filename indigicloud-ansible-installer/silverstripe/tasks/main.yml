@@ -1,0 +1,48 @@
+
+---
+- name: Create directories for SilverStripe
+  file:
+    path: "/srv/silverstripe/{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+  with_items:
+    - public
+    - private
+
+- name: Create Docker Compose file for SilverStripe
+  copy:
+    dest: /srv/silverstripe/docker-compose.yml
+    content: |
+      version: '3'
+      services:
+        silverstripe:
+          image: silvershop/silverstripe-web
+          restart: unless-stopped
+          ports:
+            - "8080:80"
+          volumes:
+            - /srv/silverstripe/public:/var/www/html/public
+            - /srv/silverstripe/private:/var/www/html/private
+
+- name: Start SilverStripe using Docker Compose
+  shell: |
+    docker-compose up -d
+  args:
+    chdir: /srv/silverstripe
+
+- name: Install Composer inside SilverStripe container
+  shell: |
+    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    php composer-setup.php
+    php -r "unlink('composer-setup.php');"
+    mv composer.phar /usr/local/bin/composer
+  args:
+    chdir: /srv/silverstripe
+
+- name: Set correct permissions for SilverStripe project
+  shell: |
+    chown -R www-data:www-data /var/www
+  args:
+    chdir: /srv/silverstripe

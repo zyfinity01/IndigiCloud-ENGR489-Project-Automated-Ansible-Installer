@@ -1,0 +1,35 @@
+
+---
+- name: Create directories for Mattermost
+  file:
+    path: "/srv/mattermost/{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+  with_items:
+    - config
+    - data
+    - logs
+
+- name: Create Docker Compose file for Mattermost
+  copy:
+    dest: /srv/mattermost/docker-compose.yml
+    content: |
+      version: '3'
+      services:
+        mattermost:
+          image: mattermost/mattermost-team-edition
+          restart: unless-stopped
+          ports:
+            - "8065:8065"
+          volumes:
+            - /srv/mattermost/data:/mattermost/data
+            - /srv/mattermost/config:/mattermost/config
+            - /srv/mattermost/logs:/mattermost/logs
+
+- name: Start Mattermost using Docker Compose
+  shell: |
+    docker-compose up -d
+  args:
+    chdir: /srv/mattermost

@@ -1,0 +1,10 @@
+---
+- hosts: all
+  become: yes
+  roles:
+    - docker
+    - gitlab
+    - jitsi_meet
+    - mattermost
+    - nextcloud
+    - silverstripe

@@ -1,0 +1,52 @@
+
+---
+- name: Create directories for Jitsi Meet
+  file:
+    path: "/srv/jitsi-meet/{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+  with_items:
+    - web
+    - prosody
+    - jicofo
+    - jvb
+
+- name: Create Docker Compose file for Jitsi Meet
+  copy:
+    dest: /srv/jitsi-meet/docker-compose.yml
+    content: |
+      version: '3'
+      services:
+        web:
+          image: jitsi/web
+          restart: unless-stopped
+          ports:
+            - "8000:80"
+            - "8443:443"
+          volumes:
+            - /srv/jitsi-meet/web:/config
+        prosody:
+          image: jitsi/prosody
+          restart: unless-stopped
+          volumes:
+            - /srv/jitsi-meet/prosody:/config
+        jicofo:
+          image: jitsi/jicofo
+          restart: unless-stopped
+          volumes:
+            - /srv/jitsi-meet/jicofo:/config
+        jvb:
+          image: jitsi/jvb
+          restart: unless-stopped
+          ports:
+            - "10000:10000/udp"
+          volumes:
+            - /srv/jitsi-meet/jvb:/config
+
+- name: Start Jitsi Meet using Docker Compose
+  shell: |
+    docker-compose up -d
+  args:
+    chdir: /srv/jitsi-meet
