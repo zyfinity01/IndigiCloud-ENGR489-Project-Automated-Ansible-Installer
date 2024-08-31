@@ -1,48 +1,93 @@
-
 ---
 - name: Create directories for SilverStripe
   file:
     path: "/srv/silverstripe/{{ item }}"
     state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: '0755'
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: "0755"
   with_items:
-    - public
-    - private
+    - silverstripedata
+    - dbdata
+
+- name: Create Dockerfile for SilverStripe
+  copy:
+    dest: /srv/silverstripe/Dockerfile
+    content: |
+      FROM brettt89/silverstripe-web:8.1-apache
+      ENV DOCUMENT_ROOT /var/www/html/public
+      COPY . $DOCUMENT_ROOT
+      WORKDIR $DOCUMENT_ROOT
 
 - name: Create Docker Compose file for SilverStripe
   copy:
     dest: /srv/silverstripe/docker-compose.yml
     content: |
-      version: '3'
+      version: "3.8"
       services:
         silverstripe:
-          image: silvershop/silverstripe-web
-          restart: unless-stopped
-          ports:
-            - "8080:80"
+          image: brettt89/silverstripe-web:8.1-apache
+          container_name: silverstripe
           volumes:
-            - /srv/silverstripe/public:/var/www/html/public
-            - /srv/silverstripe/private:/var/www/html/private
+             - /srv/silverstripe/silverstripedata:/var/www/html
+          depends_on:
+             - database
+          environment:
+             - DOCUMENT_ROOT=/var/www/html/public
+             - SS_TRUSTED_PROXY_IPS=*
+             - SS_ENVIRONMENT_TYPE=dev
+             - SS_DATABASE_SERVER=database
+             - SS_DATABASE_NAME=SS_mysite
+             - SS_DATABASE_USERNAME=root
+             - SS_DATABASE_PASSWORD=
+             - SS_DEFAULT_ADMIN_USERNAME=admin
+             - SS_DEFAULT_ADMIN_PASSWORD=password
+          ports:
+           - "8080:80"
+
+        database:
+          image: mysql:5.7
+          container_name: silverstripe_db
+          environment:
+             - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+          volumes:
+             - /srv/silverstripe/dbdata:/var/lib/mysql
+
+- name: Build SilverStripe Docker image
+  shell: |
+    docker compose build
+  args:
+    chdir: /srv/silverstripe
 
 - name: Start SilverStripe using Docker Compose
   shell: |
-    docker-compose up -d
+    docker compose up --build -d
   args:
     chdir: /srv/silverstripe
+
+- name: Set correct permissions for SilverStripe project inside the container
+  shell: |
+    docker exec silverstripe chown -R www-data:www-data /var/www
 
 - name: Install Composer inside SilverStripe container
   shell: |
-    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-    php composer-setup.php
-    php -r "unlink('composer-setup.php');"
-    mv composer.phar /usr/local/bin/composer
-  args:
-    chdir: /srv/silverstripe
+    docker exec silverstripe php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    docker exec silverstripe php -r "if (hash_file('sha384', 'dac665fdc30fdd8ec78b38b9800061b4150413ff2e3b6f88543c636f7cd84f6db9189d43a81e5503cda447da73c7e5b6') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+    docker exec silverstripe php composer-setup.php
+    docker exec silverstripe php -r "unlink('composer-setup.php');"
+    docker exec silverstripe mv composer.phar /usr/local/bin/composer
 
-- name: Set correct permissions for SilverStripe project
+- name: Check if SilverStripe is already installed
   shell: |
-    chown -R www-data:www-data /var/www
-  args:
-    chdir: /srv/silverstripe
+    docker exec silverstripe test -d /var/www/html/vendor/silverstripe
+  register: silverstripe_installed
+  ignore_errors: true
+
+- name: Install SilverStripe project inside the container
+  shell: |
+    docker exec silverstripe composer create-project silverstripe/installer .
+  when: silverstripe_installed.rc != 0
+
+- name: Set correct permissions for SilverStripe project after installation
+  shell: |
+    docker exec silverstripe chown -R www-data:www-data /var/www

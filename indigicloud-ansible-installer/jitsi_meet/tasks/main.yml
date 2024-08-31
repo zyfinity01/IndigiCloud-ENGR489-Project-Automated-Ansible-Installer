@@ -1,12 +1,11 @@
-
 ---
 - name: Create directories for Jitsi Meet
   file:
     path: "/srv/jitsi-meet/{{ item }}"
     state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: '0755'
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: "0755"
   with_items:
     - web
     - prosody
@@ -17,36 +16,67 @@
   copy:
     dest: /srv/jitsi-meet/docker-compose.yml
     content: |
-      version: '3'
       services:
         web:
-          image: jitsi/web
+          image: jitsi/web:stable
           restart: unless-stopped
           ports:
             - "8000:80"
             - "8443:443"
           volumes:
             - /srv/jitsi-meet/web:/config
-        prosody:
-          image: jitsi/prosody
+
+        jitsi_prosody:
+          image: jitsi/prosody:stable
+          container_name: jitsi_prosody
           restart: unless-stopped
+          expose:
+            - '5222'
+            - '5347'
+            - '5280'
           volumes:
             - /srv/jitsi-meet/prosody:/config
-        jicofo:
-          image: jitsi/jicofo
+          environment:
+            - XMPP_DOMAIN=meet.jitsi    # Change to your domain
+            - JICOFO_COMPONENT_SECRET=6o5ykehgngp5    # Change to a secure password
+            - JICOFO_AUTH_USER=focus
+            - JICOFO_AUTH_PASSWORD=6o5ykehgngp5
+            - JVB_AUTH_USER=jvb
+            - JVB_AUTH_PASSWORD=6o5ykehgngp5    # Change to a secure password
+
+        jitsi_jicofo:
+          image: jitsi/jicofo:stable
+          container_name: jitsi_jicofo
           restart: unless-stopped
           volumes:
             - /srv/jitsi-meet/jicofo:/config
-        jvb:
-          image: jitsi/jvb
+          environment:
+            - JICOFO_COMPONENT_SECRET=6o5ykehgngp5    # Change to a secure password
+            - JICOFO_AUTH_USER=focus
+            - JICOFO_AUTH_PASSWORD=6o5ykehgngp5    # Change to a secure password
+            - JVB_AUTH_USER=jvb
+            - JVB_AUTH_PASSWORD=6o5ykehgngp5    # Change to a secure password
+            - XMPP_DOMAIN=meet.jitsi    # Change to your domain
+            - XMPP_SERVER=xmpp.meet.jitsi    # Change to your domain
+
+        jitsi_jvb:
+          image: jitsi/jvb:stable
+          container_name: jitsi_jvb
           restart: unless-stopped
           ports:
-            - "10000:10000/udp"
+            - '10000:10000/udp'
+            - '4443:4443'
           volumes:
             - /srv/jitsi-meet/jvb:/config
+          environment:
+            - XMPP_DOMAIN=meet.jitsi    # Change to your domain
+            - JVB_AUTH_USER=jvb
+            - JVB_AUTH_PASSWORD=6o5ykehgngp5    # Change to a secure password
+            - XMPP_SERVER=xmpp.meet.jitsi    # Change to your domain
+            - PUBLIC_URL=https://meet.jitsi    # Change to your public URL
 
 - name: Start Jitsi Meet using Docker Compose
   shell: |
-    docker-compose up -d
+    docker compose up -d
   args:
     chdir: /srv/jitsi-meet

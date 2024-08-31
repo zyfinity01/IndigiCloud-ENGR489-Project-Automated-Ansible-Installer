@@ -1,12 +1,11 @@
-
 ---
 - name: Create directories for GitLab
   file:
     path: "/srv/gitlab/{{ item }}"
     state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: '0755'
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: "0755"
   with_items:
     - config
     - data
@@ -16,7 +15,6 @@
   copy:
     dest: /srv/gitlab/docker-compose.yml
     content: |
-      version: '3'
       services:
         gitlab:
           image: 'gitlab/gitlab-ce:latest'
@@ -37,6 +35,6 @@
 
 - name: Start GitLab using Docker Compose
   shell: |
-    docker-compose up -d
+    docker compose up -d
   args:
     chdir: /srv/gitlab

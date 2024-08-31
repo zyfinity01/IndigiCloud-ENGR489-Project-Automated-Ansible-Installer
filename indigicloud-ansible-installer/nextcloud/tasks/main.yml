@@ -1,33 +1,51 @@
-
 ---
 - name: Create directories for Nextcloud
   file:
     path: "/srv/nextcloud/{{ item }}"
     state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: '0755'
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: "0755"
   with_items:
     - app
     - data
+    - dbdata
 
 - name: Create Docker Compose file for Nextcloud
   copy:
     dest: /srv/nextcloud/docker-compose.yml
     content: |
-      version: '3'
       services:
-        nextcloud:
+        db:
+          image: mariadb
+          container_name: nextcloud_db
+          restart: always
+          volumes:
+            - /srv/nextcloud/dbdata:/var/lib/mysql
+          environment:
+            MYSQL_ROOT_PASSWORD: ukwmles3lhfg
+            MYSQL_DATABASE: nextcloud
+            MYSQL_USER: nextcloud
+            MYSQL_PASSWORD: ukwmles3lhfg
+
+        app:
           image: nextcloud
-          restart: unless-stopped
+          container_name: nextcloud_app
+          restart: always
           ports:
-            - "8080:80"
+            - "8081:80"
+          depends_on:
+            - db
           volumes:
             - /srv/nextcloud/app:/var/www/html
-            - /srv/nextcloud/data:/var/www/html/data
+          environment:
+            MYSQL_PASSWORD: ukwmles3lhfg
+            MYSQL_DATABASE: nextcloud
+            MYSQL_USER: nextcloud
+            MYSQL_HOST: db
 
 - name: Start Nextcloud using Docker Compose
   shell: |
-    docker-compose up -d
+    docker compose up -d
   args:
     chdir: /srv/nextcloud
