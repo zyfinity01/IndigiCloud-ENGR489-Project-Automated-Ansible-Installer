@@ -21,8 +21,7 @@
           image: jitsi/web:stable
           restart: unless-stopped
           ports:
-            - "8000:80"
-            - "8443:443"
+            - "8084:80"
           volumes:
             - /srv/jitsi-meet/web:/config
 
