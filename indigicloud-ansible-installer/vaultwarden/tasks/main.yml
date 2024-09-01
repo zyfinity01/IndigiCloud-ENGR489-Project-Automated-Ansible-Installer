@@ -1,0 +1,39 @@
+---
+- name: Create directories for Vaultwarden
+  file:
+    path: "/srv/vaultwarden/{{ item }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: "0755"
+  with_items:
+    - data
+    - ssl
+
+- name: Create Docker Compose file for Vaultwarden
+  copy:
+    dest: /srv/vaultwarden/docker-compose.yml
+    content: |
+      version: '3.8'
+
+      services:
+        vaultwarden:
+          image: vaultwarden/server
+          container_name: vaultwarden_server
+          ports:
+            - "8085:80"
+          environment:
+            - ADMIN_TOKEN={{ admin_token }}
+          volumes:
+            - /srv/vaultwarden/data:/data
+            - /srv/vaultwarden/ssl:/ssl
+          restart: always
+
+  vars:
+    admin_token: your_admin_token
+
+- name: Start Vaultwarden using Docker Compose
+  shell: |
+    docker compose up -d
+  args:
+    chdir: /srv/vaultwarden
