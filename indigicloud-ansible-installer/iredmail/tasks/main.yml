@@ -1,0 +1,67 @@
+---
+- name: Create directories for iRedMail
+  file:
+    path: "/srv/iredmail/{{ item }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: "0755"
+  with_items:
+    - mail
+    - clamav
+    - dbdata
+
+- name: Create Docker Compose file for iRedMail
+  copy:
+    dest: /srv/iredmail/docker-compose.yml
+    content: |
+      version: '3.8'
+
+      services:
+        mailserver:
+          image: onlyoffice/mailserver
+          container_name: iredmail_server
+          ports:
+            - 25:25
+            - 143:143
+            - 587:587
+            - 993:993
+          environment:
+            - DB_TYPE=mysql
+            - DB_HOST=db
+            - DB_NAME=mailserver
+            - DB_USER=iredmail
+            - DB_PASSWD=77dw8i4yji
+            - RSPAMD_PASSWORD=your_rspamd_password
+            - MYSQL_ROOT_PASSWORD=0jtvhirxzq
+            - DOMAIN=your_domain.com
+            - HOSTNAME=mail.your_domain.com
+          volumes:
+            - /srv/iredmail/mail:/var/vmail
+            - /srv/iredmail/clamav:/var/lib/clamav
+          restart: always
+
+        db:
+          image: mariadb
+          container_name: iredmail_db
+          environment:
+            MYSQL_ROOT_PASSWORD: 0jtvhirxzq
+            MYSQL_DATABASE: mailserver
+            MYSQL_USER: iredmail
+            MYSQL_PASSWORD: 77dw8i4yji
+          volumes:
+            - /srv/iredmail/dbdata:/var/lib/mysql
+          restart: always
+
+  vars:
+    db_password: 77dw8i4yji
+    rspamd_password: your_rspamd_password
+    root_password: 0jtvhirxzq
+    domain: your_domain.com
+    hostname: mail.your_domain.com
+
+- name: Start iRedMail using Docker Compose
+  shell: |
+    docker compose up -d
+  args:
+    chdir: /srv/iredmail
