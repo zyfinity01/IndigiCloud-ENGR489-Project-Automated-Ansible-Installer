@@ -16,14 +16,22 @@
   copy:
     dest: /srv/jitsi-meet/docker-compose.yml
     content: |
+      version: '3.8'
       services:
-        web:
+        jitsi_web:
           image: jitsi/web:stable
           restart: unless-stopped
           ports:
-            - "8084:80"
+            - "{{ item.port }}:80"  # Dynamically expose the port from subdomains.yml
           volumes:
             - /srv/jitsi-meet/web:/config
+          environment:
+            - VIRTUAL_HOST={{ item.subdomain }}.{{ cloudflare_domain }}  # Set the subdomain for NGINX proxy
+            - VIRTUAL_PORT=80  # Port inside the Jitsi web container
+            - LETSENCRYPT_HOST={{ item.subdomain }}.{{ cloudflare_domain }}  # Request a certificate for this subdomain
+            - LETSENCRYPT_EMAIL={{ certbot_email }}
+          networks:
+            - app-suite
 
         jitsi_prosody:
           image: jitsi/prosody:stable
@@ -36,12 +44,14 @@
           volumes:
             - /srv/jitsi-meet/prosody:/config
           environment:
-            - XMPP_DOMAIN={{ jitsi_xmpp_domain }}   # Change to your domain
-            - JICOFO_COMPONENT_SECRET={{ jitsi_jicofo_component_secret }}   # Change to a secure password
+            - XMPP_DOMAIN=xmpp.{{ item.subdomain }}.{{ cloudflare_domain }}  # XMPP on xmpp.subdomain.cloudflare_domain
+            - JICOFO_COMPONENT_SECRET={{ jitsi_jicofo_component_secret }}
             - JICOFO_AUTH_USER=focus
             - JICOFO_AUTH_PASSWORD={{ jitsi_jicofo_auth_password }}
             - JVB_AUTH_USER=jvb
-            - JVB_AUTH_PASSWORD={{ jitsi_jvb_auth_password }}   # Change to a secure password
+            - JVB_AUTH_PASSWORD={{ jitsi_jvb_auth_password }}
+          networks:
+            - app-suite
 
         jitsi_jicofo:
           image: jitsi/jicofo:stable
@@ -50,13 +60,15 @@
           volumes:
             - /srv/jitsi-meet/jicofo:/config
           environment:
-            - JICOFO_COMPONENT_SECRET={{ jitsi_jicofo_component_secret }}   # Change to a secure password
+            - JICOFO_COMPONENT_SECRET={{ jitsi_jicofo_component_secret }}
             - JICOFO_AUTH_USER=focus
-            - JICOFO_AUTH_PASSWORD={{ jitsi_jicofo_auth_password }}   # Change to a secure password
+            - JICOFO_AUTH_PASSWORD={{ jitsi_jicofo_auth_password }}
             - JVB_AUTH_USER=jvb
-            - JVB_AUTH_PASSWORD={{ jitsi_jvb_auth_password }}   # Change to a secure password
-            - XMPP_DOMAIN={{ jitsi_xmpp_domain }}   # Change to your domain
-            - XMPP_SERVER={{ jitsi_xmpp_server }}   # Change to your domain
+            - JVB_AUTH_PASSWORD={{ jitsi_jvb_auth_password }}
+            - XMPP_DOMAIN=xmpp.{{ item.subdomain }}.{{ cloudflare_domain }}  # XMPP on xmpp.subdomain.cloudflare_domain
+            - XMPP_SERVER=xmpp.{{ item.subdomain }}.{{ cloudflare_domain }}  # XMPP server on xmpp.subdomain.cloudflare_domain
+          networks:
+            - app-suite
 
         jitsi_jvb:
           image: jitsi/jvb:stable
@@ -68,11 +80,19 @@
           volumes:
             - /srv/jitsi-meet/jvb:/config
           environment:
-            - XMPP_DOMAIN={{ jitsi_xmpp_domain }}   # Change to your domain
+            - XMPP_DOMAIN=xmpp.{{ item.subdomain }}.{{ cloudflare_domain }}  # XMPP on xmpp.subdomain.cloudflare_domain
             - JVB_AUTH_USER=jvb
-            - JVB_AUTH_PASSWORD={{ jitsi_jvb_auth_password }}   # Change to a secure password
-            - XMPP_SERVER={{ jitsi_xmpp_server }}   # Change to your domain
-            - PUBLIC_URL={{ jitsi_public_url }}   # Change to your public URL
+            - JVB_AUTH_PASSWORD={{ jitsi_jvb_auth_password }}
+            - XMPP_SERVER=xmpp.{{ item.subdomain }}.{{ cloudflare_domain }}  # XMPP server on xmpp.subdomain.cloudflare_domain
+            - PUBLIC_URL=https://{{ item.subdomain }}.{{ cloudflare_domain }}  # Public URL for Jitsi
+          networks:
+            - app-suite
+      networks:
+        app-suite:
+          driver: bridge
+          external: true
+  with_items: "{{ subdomains }}"
+  when: item.service == "jitsi"
 
 - name: Start Jitsi Meet using Docker Compose
   shell: |

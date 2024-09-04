@@ -29,29 +29,45 @@
           image: brettt89/silverstripe-web:8.1-apache
           container_name: silverstripe
           volumes:
-             - /srv/silverstripe/silverstripedata:/var/www/html
+            - /srv/silverstripe/silverstripedata:/var/www/html
           depends_on:
-             - database
+            - silverstripe_db
           environment:
-             - DOCUMENT_ROOT=/var/www/html/public
-             - SS_TRUSTED_PROXY_IPS=*
-             - SS_ENVIRONMENT_TYPE=dev
-             - SS_DATABASE_SERVER=database
-             - SS_DATABASE_NAME={{ silverstripe_db_name }}
-             - SS_DATABASE_USERNAME={{ silverstripe_db_user }}
-             - SS_DATABASE_PASSWORD={{ silverstripe_db_password }}
-             - SS_DEFAULT_ADMIN_USERNAME={{ silverstripe_admin_user }}
-             - SS_DEFAULT_ADMIN_PASSWORD={{ silverstripe_admin_password }}
+            - DOCUMENT_ROOT=/var/www/html/public
+            - SS_TRUSTED_PROXY_IPS=*
+            - SS_ENVIRONMENT_TYPE=dev
+            - SS_DATABASE_SERVER=silverstripe_db
+            - SS_DATABASE_NAME={{ silverstripe_db_name }}
+            - SS_DATABASE_USERNAME={{ silverstripe_db_user }}
+            - SS_DATABASE_PASSWORD={{ silverstripe_db_password }}
+            - SS_DEFAULT_ADMIN_USERNAME={{ silverstripe_admin_user }}
+            - SS_DEFAULT_ADMIN_PASSWORD={{ silverstripe_admin_password }}
+            - VIRTUAL_HOST={{ item.subdomain }}.{{ cloudflare_domain }}  # Set the subdomain for NGINX proxy
+            - VIRTUAL_PORT=80  # Port inside the SilverStripe container
+            - LETSENCRYPT_HOST={{ item.subdomain }}.{{ cloudflare_domain }}  # Request a certificate for this subdomain
+            - LETSENCRYPT_EMAIL={{ certbot_email }}
           ports:
-           - "8080:80"
+            - "{{ item.port }}:80"  # Expose the internal port 80 to the host
+          networks:
+            - app-suite
+          restart: always
 
-        database:
+        silverstripe_db:
           image: mysql:5.7
           container_name: silverstripe_db
           environment:
-             - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+            - MYSQL_ALLOW_EMPTY_PASSWORD=yes
           volumes:
-             - /srv/silverstripe/dbdata:/var/lib/mysql
+            - /srv/silverstripe/dbdata:/var/lib/mysql
+          networks:
+            - app-suite
+            
+      networks:
+        app-suite:
+          driver: bridge
+          external: true
+  with_items: "{{ subdomains }}"
+  when: item.service == "silverstripe"
 
 - name: Build SilverStripe Docker image
   shell: |

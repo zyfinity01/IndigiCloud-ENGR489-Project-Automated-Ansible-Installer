@@ -31,12 +31,9 @@ mattermost_db_password: "3waf8z6q15rm"
 mattermost_db_name: "mattermost"
 
 # Jitsi Meet variables
-jitsi_xmpp_domain: "meet.jitsi"
 jitsi_jicofo_component_secret: "6o5ykehgngp5"
 jitsi_jicofo_auth_password: "6o5ykehgngp5"
 jitsi_jvb_auth_password: "6o5ykehgngp5"
-jitsi_xmpp_server: "xmpp.meet.jitsi"
-jitsi_public_url: "https://meet.jitsi"
 
 # iRedMail variables
 iredmail_db_name: "mailserver"

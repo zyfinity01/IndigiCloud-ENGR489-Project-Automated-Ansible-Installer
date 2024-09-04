@@ -31,8 +31,6 @@
 
   roles:
     - docker
-    - cloudflare
-    - nginx_certbot
     - gitlab
     - jitsi_meet
     - mattermost
@@ -40,3 +38,5 @@
     - iredmail
     - vaultwarden
     - silverstripe
+    - cloudflare
+    - nginx_certbot

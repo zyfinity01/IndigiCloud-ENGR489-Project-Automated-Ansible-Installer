@@ -1,13 +1,24 @@
 subdomains:
-  - subdomain: "vaultwarden"
+  - service: "vaultwarden"
+    subdomain: "vaultwarden"
     port: "8085"
-  - subdomain: "jitsi"
+
+  - service: "jitsi"
+    subdomain: "jitsi"
     port: "8084"
-  - subdomain: "mattermost"
+
+  - service: "mattermost"
+    subdomain: "mattermost"
     port: "8083"
-  - subdomain: "gitlab"
+
+  - service: "gitlab"
+    subdomain: "gitlab"
     port: "8082"
-  - subdomain: "nextcloud"
+
+  - service: "nextcloud"
+    subdomain: "nextcloud"
     port: "8081"
-  - subdomain: "silverstripe"
+
+  - service: "silverstripe"
+    subdomain: "silverstripe"
     port: "8080"

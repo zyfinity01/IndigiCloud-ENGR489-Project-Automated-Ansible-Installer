@@ -55,3 +55,12 @@
     groups: docker
     append: true
   when: docker_installed.rc != 0
+
+- name: Check if Docker network app-suite exists
+  command: docker network inspect app-suite
+  register: network_check
+  ignore_errors: true
+
+- name: Create Docker network app-suite
+  command: docker network create app-suite
+  when: network_check.rc != 0

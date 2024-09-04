@@ -23,9 +23,10 @@
   copy:
     dest: /srv/mattermost/docker-compose.yml
     content: |
+      version: '3.8'
       services:
-        db:
-          container_name: mattermost-db
+        mattermost_db:
+          container_name: mattermost_db
           image: postgres:13
           restart: always
           volumes:
@@ -34,21 +35,35 @@
             POSTGRES_USER: {{ mattermost_db_user }}
             POSTGRES_PASSWORD: {{ mattermost_db_password }}
             POSTGRES_DB: {{ mattermost_db_name }}
+          networks:
+            - app-suite
 
         app:
           container_name: mattermost-app
           image: mattermost/mattermost-team-edition:latest
           restart: always
           depends_on:
-            - db
+            - mattermost_db
           ports:
-            - "8083:8065"
+            - "{{ item.port }}:8065"  # Dynamically expose the port from subdomains.yml
           volumes:
             - /srv/mattermost/data:/mattermost/data
           environment:
             MM_SQLSETTINGS_DRIVERNAME: postgres
-            MM_SQLSETTINGS_DATASOURCE: postgres://{{ mattermost_db_user }}:{{ mattermost_db_password }}@db:5432/{{ mattermost_db_name }}?sslmode=disable
-            MM_SERVICESETTINGS_SITEURL: http://localhost:8065
+            MM_SQLSETTINGS_DATASOURCE: postgres://{{ mattermost_db_user }}:{{ mattermost_db_password }}@mattermost_db:5432/{{ mattermost_db_name }}?sslmode=disable
+            MM_SERVICESETTINGS_SITEURL: http://{{ item.subdomain }}.{{ cloudflare_domain }}
+            VIRTUAL_HOST: {{ item.subdomain }}.{{ cloudflare_domain }}  # Set the subdomain for NGINX proxy
+            VIRTUAL_PORT: 8065  # Port inside the Mattermost container
+            LETSENCRYPT_HOST: {{ item.subdomain }}.{{ cloudflare_domain }}  # Request a certificate for this subdomain
+            LETSENCRYPT_EMAIL: {{ certbot_email }}
+          networks:
+            - app-suite
+      networks:
+        app-suite:
+          driver: bridge
+          external: true
+  loop: "{{ subdomains }}"
+  when: item.service == "mattermost"
 
 - name: Start Mattermost using Docker Compose
   shell: |

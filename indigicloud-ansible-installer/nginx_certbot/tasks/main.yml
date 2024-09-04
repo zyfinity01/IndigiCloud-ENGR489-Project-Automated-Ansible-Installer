@@ -10,13 +10,17 @@
     - conf.d
     - certs
 
-- name: Deploy NGINX configuration for each subdomain
-  template:
-    src: nginx.conf.j2
-    dest: "/srv/nginx/conf.d/{{ item.subdomain }}.conf"
-  loop: "{{ subdomains.subdomains }}"
-  vars:
-    nginx_domain: "{{ cloudflare_domain }}"
+# - name: Deploy NGINX configuration for each subdomain
+#   template:
+#     src: nginx.conf.j2
+#     dest: "/srv/nginx/conf.d/{{ item.subdomain }}.conf"
+#   loop: "{{ subdomains.subdomains }}"
+#   vars:
+#     nginx_domain: "{{ cloudflare_domain }}"
+
+- name: Build comma-delimited list of subdomains for Let's Encrypt
+  set_fact:
+    letsencrypt_host: "{{ subdomains.subdomains | map(attribute='subdomain') | map('regex_replace', '^(.*)$', '\\1.' + cloudflare_domain) | join(',') }}"
 
 - name: Deploy Docker Compose file for NGINX and Certbot
   copy:
@@ -24,7 +28,7 @@
     content: |
       services:
         nginx-proxy:
-          image: jwilder/nginx-proxy
+          image: nginxproxy/nginx-proxy
           container_name: nginx-proxy
           ports:
             - "80:80"
@@ -35,6 +39,8 @@
             - /srv/nginx/conf.d:/etc/nginx/conf.d
             - /srv/nginx/vhost.d:/etc/nginx/vhost.d
             - /srv/nginx/html:/usr/share/nginx/html
+          networks:
+            - app-suite
           restart: always
           environment:
             - DEFAULT_HOST={{ cloudflare_domain }}
@@ -50,10 +56,13 @@
           environment:
             - DEFAULT_EMAIL={{ certbot_email }}
             - NGINX_PROXY_CONTAINER=nginx-proxy
-            - LETSENCRYPT_HOST=*.{{ cloudflare_domain }}
-            - CERTBOT_EMAIL={{ certbot_email }}
-            - CERTBOT_STAGING={{ certbot_staging }}
-            - CERTBOT_DOMAINS={{ certbot_domains }}
+            - LETSENCRYPT_HOST={{ letsencrypt_host }}  # Use the comma-delimited list of subdomains
+          networks:
+            - app-suite
+      networks:
+        app-suite:
+          driver: bridge
+          external: true
 
 - name: Start NGINX and Certbot containers
   shell: |

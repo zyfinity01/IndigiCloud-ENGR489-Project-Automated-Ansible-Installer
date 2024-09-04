@@ -15,19 +15,31 @@
     dest: /srv/vaultwarden/docker-compose.yml
     content: |
       version: '3.8'
-
       services:
         vaultwarden:
           image: vaultwarden/server
           container_name: vaultwarden_server
           ports:
-            - "8085:80"
+            - "{{ item.port }}:80"  # Dynamically use the port from subdomains.yml
           environment:
             - ADMIN_TOKEN={{ admin_token }}
+            - VIRTUAL_HOST={{ item.subdomain }}.{{ cloudflare_domain }}  # Use the subdomain from subdomains.yml
+            - VIRTUAL_PORT=80  # Fixed internal port for Vaultwarden
+            - LETSENCRYPT_HOST={{ item.subdomain }}.{{ cloudflare_domain }}  # Let’s Encrypt certificate for the subdomain
+            - LETSENCRYPT_EMAIL={{ certbot_email }}
           volumes:
             - /srv/vaultwarden/data:/data
             - /srv/vaultwarden/ssl:/ssl
+          networks:
+            - app-suite
           restart: always
+
+      networks:
+        app-suite:
+          driver: bridge
+          external: true
+  loop: "{{ subdomains }}"
+  when: item.service == "vaultwarden"
 
   vars:
     admin_token: your_admin_token
