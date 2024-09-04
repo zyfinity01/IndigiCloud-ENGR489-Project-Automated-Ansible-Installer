@@ -37,11 +37,11 @@
              - SS_TRUSTED_PROXY_IPS=*
              - SS_ENVIRONMENT_TYPE=dev
              - SS_DATABASE_SERVER=database
-             - SS_DATABASE_NAME=SS_mysite
-             - SS_DATABASE_USERNAME=root
-             - SS_DATABASE_PASSWORD=
-             - SS_DEFAULT_ADMIN_USERNAME=admin
-             - SS_DEFAULT_ADMIN_PASSWORD=password
+             - SS_DATABASE_NAME={{ silverstripe_db_name }}
+             - SS_DATABASE_USERNAME={{ silverstripe_db_user }}
+             - SS_DATABASE_PASSWORD={{ silverstripe_db_password }}
+             - SS_DEFAULT_ADMIN_USERNAME={{ silverstripe_admin_user }}
+             - SS_DEFAULT_ADMIN_PASSWORD={{ silverstripe_admin_password }}
           ports:
            - "8080:80"
 
@@ -82,6 +82,13 @@
     docker exec silverstripe test -d /var/www/html/vendor/silverstripe
   register: silverstripe_installed
   ignore_errors: true
+  changed_when: false
+  failed_when: false
+
+- name: Notify user if SilverStripe is not installed
+  debug:
+    msg: "Existing SilverStripe installation not found, installing now..."
+  when: silverstripe_installed.rc != 0
 
 - name: Install SilverStripe project inside the container
   shell: |

@@ -36,12 +36,12 @@
           volumes:
             - /srv/jitsi-meet/prosody:/config
           environment:
-            - XMPP_DOMAIN=meet.jitsi    # Change to your domain
-            - JICOFO_COMPONENT_SECRET=6o5ykehgngp5    # Change to a secure password
+            - XMPP_DOMAIN={{ jitsi_xmpp_domain }}   # Change to your domain
+            - JICOFO_COMPONENT_SECRET={{ jitsi_jicofo_component_secret }}   # Change to a secure password
             - JICOFO_AUTH_USER=focus
-            - JICOFO_AUTH_PASSWORD=6o5ykehgngp5
+            - JICOFO_AUTH_PASSWORD={{ jitsi_jicofo_auth_password }}
             - JVB_AUTH_USER=jvb
-            - JVB_AUTH_PASSWORD=6o5ykehgngp5    # Change to a secure password
+            - JVB_AUTH_PASSWORD={{ jitsi_jvb_auth_password }}   # Change to a secure password
 
         jitsi_jicofo:
           image: jitsi/jicofo:stable
@@ -50,13 +50,13 @@
           volumes:
             - /srv/jitsi-meet/jicofo:/config
           environment:
-            - JICOFO_COMPONENT_SECRET=6o5ykehgngp5    # Change to a secure password
+            - JICOFO_COMPONENT_SECRET={{ jitsi_jicofo_component_secret }}   # Change to a secure password
             - JICOFO_AUTH_USER=focus
-            - JICOFO_AUTH_PASSWORD=6o5ykehgngp5    # Change to a secure password
+            - JICOFO_AUTH_PASSWORD={{ jitsi_jicofo_auth_password }}   # Change to a secure password
             - JVB_AUTH_USER=jvb
-            - JVB_AUTH_PASSWORD=6o5ykehgngp5    # Change to a secure password
-            - XMPP_DOMAIN=meet.jitsi    # Change to your domain
-            - XMPP_SERVER=xmpp.meet.jitsi    # Change to your domain
+            - JVB_AUTH_PASSWORD={{ jitsi_jvb_auth_password }}   # Change to a secure password
+            - XMPP_DOMAIN={{ jitsi_xmpp_domain }}   # Change to your domain
+            - XMPP_SERVER={{ jitsi_xmpp_server }}   # Change to your domain
 
         jitsi_jvb:
           image: jitsi/jvb:stable
@@ -68,11 +68,11 @@
           volumes:
             - /srv/jitsi-meet/jvb:/config
           environment:
-            - XMPP_DOMAIN=meet.jitsi    # Change to your domain
+            - XMPP_DOMAIN={{ jitsi_xmpp_domain }}   # Change to your domain
             - JVB_AUTH_USER=jvb
-            - JVB_AUTH_PASSWORD=6o5ykehgngp5    # Change to a secure password
-            - XMPP_SERVER=xmpp.meet.jitsi    # Change to your domain
-            - PUBLIC_URL=https://meet.jitsi    # Change to your public URL
+            - JVB_AUTH_PASSWORD={{ jitsi_jvb_auth_password }}   # Change to a secure password
+            - XMPP_SERVER={{ jitsi_xmpp_server }}   # Change to your domain
+            - PUBLIC_URL={{ jitsi_public_url }}   # Change to your public URL
 
 - name: Start Jitsi Meet using Docker Compose
   shell: |

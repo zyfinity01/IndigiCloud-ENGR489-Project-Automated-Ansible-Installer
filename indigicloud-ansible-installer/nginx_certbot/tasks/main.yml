@@ -1,0 +1,62 @@
+---
+- name: Ensure necessary directories exist
+  file:
+    path: "/srv/nginx/{{ item }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+    mode: "0755"
+  with_items:
+    - conf.d
+    - certs
+
+- name: Deploy NGINX configuration for each subdomain
+  template:
+    src: nginx.conf.j2
+    dest: "/srv/nginx/conf.d/{{ item.subdomain }}.conf"
+  loop: "{{ subdomains.subdomains }}"
+  vars:
+    nginx_domain: "{{ cloudflare_domain }}"
+
+- name: Deploy Docker Compose file for NGINX and Certbot
+  copy:
+    dest: /srv/nginx/docker-compose.yml
+    content: |
+      services:
+        nginx-proxy:
+          image: jwilder/nginx-proxy
+          container_name: nginx-proxy
+          ports:
+            - "80:80"
+            - "443:443"
+          volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+            - /srv/nginx/certs:/etc/nginx/certs:ro
+            - /srv/nginx/conf.d:/etc/nginx/conf.d
+            - /srv/nginx/vhost.d:/etc/nginx/vhost.d
+            - /srv/nginx/html:/usr/share/nginx/html
+          restart: always
+          environment:
+            - DEFAULT_HOST={{ cloudflare_domain }}
+
+        letsencrypt:
+          image: jrcs/letsencrypt-nginx-proxy-companion
+          container_name: letsencrypt
+          volumes:
+            - /srv/nginx/certs:/etc/nginx/certs:rw
+            - /srv/nginx/vhost.d:/etc/nginx/vhost.d
+            - /srv/nginx/html:/usr/share/nginx/html
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+          environment:
+            - DEFAULT_EMAIL={{ certbot_email }}
+            - NGINX_PROXY_CONTAINER=nginx-proxy
+            - LETSENCRYPT_HOST=*.{{ cloudflare_domain }}
+            - CERTBOT_EMAIL={{ certbot_email }}
+            - CERTBOT_STAGING={{ certbot_staging }}
+            - CERTBOT_DOMAINS={{ certbot_domains }}
+
+- name: Start NGINX and Certbot containers
+  shell: |
+    docker compose up -d
+  args:
+    chdir: /srv/nginx

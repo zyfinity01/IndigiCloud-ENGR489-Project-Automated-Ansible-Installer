@@ -29,13 +29,13 @@
           environment:
             - DB_TYPE=mysql
             - DB_HOST=db
-            - DB_NAME=mailserver
-            - DB_USER=iredmail
-            - DB_PASSWD=77dw8i4yji
-            - RSPAMD_PASSWORD=your_rspamd_password
-            - MYSQL_ROOT_PASSWORD=0jtvhirxzq
-            - DOMAIN=your_domain.com
-            - HOSTNAME=mail.your_domain.com
+            - DB_NAME={{ iredmail_db_name }}
+            - DB_USER={{ iredmail_db_user }}
+            - DB_PASSWD={{ iredmail_db_password }}
+            - RSPAMD_PASSWORD={{ iredmail_rspamd_password }}
+            - MYSQL_ROOT_PASSWORD={{ iredmail_root_password }}
+            - DOMAIN={{ iredmail_domain }}
+            - HOSTNAME={{ iredmail_hostname }}
           volumes:
             - /srv/iredmail/mail:/var/vmail
             - /srv/iredmail/clamav:/var/lib/clamav
@@ -45,20 +45,13 @@
           image: mariadb
           container_name: iredmail_db
           environment:
-            MYSQL_ROOT_PASSWORD: 0jtvhirxzq
-            MYSQL_DATABASE: mailserver
-            MYSQL_USER: iredmail
-            MYSQL_PASSWORD: 77dw8i4yji
+            MYSQL_ROOT_PASSWORD: {{ iredmail_root_password }}
+            MYSQL_DATABASE: {{ iredmail_db_name }}
+            MYSQL_USER: {{ iredmail_db_user }}
+            MYSQL_PASSWORD: {{ iredmail_db_password }}
           volumes:
             - /srv/iredmail/dbdata:/var/lib/mysql
           restart: always
-
-  vars:
-    db_password: 77dw8i4yji
-    rspamd_password: your_rspamd_password
-    root_password: 0jtvhirxzq
-    domain: your_domain.com
-    hostname: mail.your_domain.com
 
 - name: Start iRedMail using Docker Compose
   shell: |

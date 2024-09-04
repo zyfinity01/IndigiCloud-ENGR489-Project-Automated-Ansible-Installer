@@ -1,0 +1,55 @@
+# Flag to track if variables have been set. Set as true once you have initially configured the variables.
+variables_initialized: false
+
+# Certbot variables
+certbot_email: "admin@example.com"
+certbot_domains: "*.{{ cloudflare_domain }}" # For wildcard certificate
+certbot_staging: false # Set to true for testing; use false for production
+
+# Cloudflare variables
+cloudflare_api_key: "your_cloudflare_api_key"
+cloudflare_email: "your_cloudflare_email"
+cloudflare_domain: "example.com"
+your_server_ip: ""
+
+#Silverstripe variables:
+silverstripe_db_name: SS_mysite
+silverstripe_db_user: root
+silverstripe_db_password: ""
+silverstripe_admin_user: admin
+silverstripe_admin_password: password
+
+# Nextcloud variables
+nextcloud_db_root_password: "ukwmles3lhfg"
+nextcloud_db_name: "nextcloud"
+nextcloud_db_user: "nextcloud"
+nextcloud_db_password: "ukwmles3lhfg"
+
+# Mattermost variables
+mattermost_db_user: "mmuser"
+mattermost_db_password: "3waf8z6q15rm"
+mattermost_db_name: "mattermost"
+
+# Jitsi Meet variables
+jitsi_xmpp_domain: "meet.jitsi"
+jitsi_jicofo_component_secret: "6o5ykehgngp5"
+jitsi_jicofo_auth_password: "6o5ykehgngp5"
+jitsi_jvb_auth_password: "6o5ykehgngp5"
+jitsi_xmpp_server: "xmpp.meet.jitsi"
+jitsi_public_url: "https://meet.jitsi"
+
+# iRedMail variables
+iredmail_db_name: "mailserver"
+iredmail_db_user: "iredmail"
+iredmail_db_password: "77dw8i4yji"
+iredmail_rspamd_password: "your_rspamd_password"
+iredmail_root_password: "0jtvhirxzq"
+iredmail_domain: "your_domain.com"
+iredmail_hostname: "mail.your_domain.com"
+
+# GitLab variables
+gitlab_hostname: "gitlab.example.com"
+gitlab_external_url: "http://gitlab.example.com"
+
+#Vaultwarden variables:
+admin_token: your_admin_token #This is the admin token for vaultwarden and is required to be set as the master password

@@ -1,0 +1,49 @@
+---
+- name: Get public IPv4 address
+  set_fact:
+    public_ipv4: "{{ ansible_facts['default_ipv4']['address'] }}"
+
+- name: Debug public IPv4
+  debug:
+    var: public_ipv4
+
+- name: Update global_vars.yml with public IPv4
+  lineinfile:
+    path: "{{ playbook_dir }}/global_vars.yml"
+    regexp: "^your_server_ip:"
+    line: 'your_server_ip: "{{ public_ipv4 }}"'
+    create: yes
+  when: public_ipv4 is defined
+
+- name: Load updated global vars
+  include_vars:
+    file: "{{ playbook_dir }}/global_vars.yml"
+
+- name: Load subdomains from file
+  set_fact:
+    subdomains: "{{ lookup('file', 'subdomains.yml') | from_yaml }}"
+
+- name: Debug subdomains
+  debug:
+    var: subdomains
+
+- name: Update DNS records in Cloudflare
+  community.general.cloudflare_dns:
+    zone: "{{ cloudflare_domain }}"
+    record: "{{ item.subdomain }}.{{ cloudflare_domain }}"
+    type: A
+    value: "{{ your_server_ip }}"
+    account_email: "{{ cloudflare_email }}"
+    account_api_key: "{{ cloudflare_api_key }}"
+    state: present
+  loop: "{{ subdomains.subdomains }}"
+  register: cloudflare_result
+  ignore_errors: true
+
+- name: Debug Cloudflare API response
+  debug:
+    var: cloudflare_result
+
+- name: Wait for DNS propagation
+  pause:
+    seconds: 30

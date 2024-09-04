@@ -1,8 +1,38 @@
 ---
 - hosts: localhost
+  vars_files:
+    - global_vars.yml
+    - subdomains.yml
   become: true
+
+  pre_tasks:
+    - name: Check if critical variables are set
+      fail:
+        msg: "Critical variables in global_vars.yml have not been set. Please set these variables and try again. Ensure that if this is not your first time setting the variables that you ensure you confirm what you are changing will not break the setup."
+      when:
+        - silverstripe_db_password == "" or silverstripe_admin_password == "" or admin_token == ""
+        - variables_initialized == false
+
+    - name: Prompt for confirmation on subsequent runs
+      pause:
+        prompt: "You have previously set critical variables. Continuing could make changes that break your setup. Do you want to proceed? (yes/no)"
+      when: variables_initialized == true
+      register: user_confirmation
+
+    - name: Fail if user does not confirm to proceed
+      fail:
+        msg: "Ansible run aborted by the user to avoid unintended changes."
+      when: user_confirmation.user_input != "yes"
+
+    - name: Mark variables as initialized
+      set_fact:
+        variables_initialized: true
+      when: variables_initialized == false
+
   roles:
     - docker
+    - cloudflare
+    - nginx_certbot
     - gitlab
     - jitsi_meet
     - mattermost

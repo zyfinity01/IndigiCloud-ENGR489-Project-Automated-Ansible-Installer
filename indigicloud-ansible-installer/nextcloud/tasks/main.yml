@@ -23,10 +23,10 @@
           volumes:
             - /srv/nextcloud/dbdata:/var/lib/mysql
           environment:
-            MYSQL_ROOT_PASSWORD: ukwmles3lhfg
-            MYSQL_DATABASE: nextcloud
-            MYSQL_USER: nextcloud
-            MYSQL_PASSWORD: ukwmles3lhfg
+            MYSQL_ROOT_PASSWORD: {{ nextcloud_db_root_password }}
+            MYSQL_DATABASE: {{ nextcloud_db_name }}
+            MYSQL_USER: {{ nextcloud_db_user }}
+            MYSQL_PASSWORD: {{ nextcloud_db_password }}
 
         app:
           image: nextcloud
@@ -39,9 +39,9 @@
           volumes:
             - /srv/nextcloud/app:/var/www/html
           environment:
-            MYSQL_PASSWORD: ukwmles3lhfg
-            MYSQL_DATABASE: nextcloud
-            MYSQL_USER: nextcloud
+            MYSQL_PASSWORD: {{ nextcloud_db_password }}
+            MYSQL_DATABASE: {{ nextcloud_db_name }}
+            MYSQL_USER: {{ nextcloud_db_user }}
             MYSQL_HOST: db
 
 - name: Start Nextcloud using Docker Compose

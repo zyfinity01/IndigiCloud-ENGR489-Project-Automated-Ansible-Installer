@@ -31,9 +31,9 @@
           volumes:
             - /srv/mattermost/dbdata:/var/lib/postgresql/data
           environment:
-            POSTGRES_USER: mmuser
-            POSTGRES_PASSWORD: 3waf8z6q15rm
-            POSTGRES_DB: mattermost
+            POSTGRES_USER: {{ mattermost_db_user }}
+            POSTGRES_PASSWORD: {{ mattermost_db_password }}
+            POSTGRES_DB: {{ mattermost_db_name }}
 
         app:
           container_name: mattermost-app
@@ -47,7 +47,7 @@
             - /srv/mattermost/data:/mattermost/data
           environment:
             MM_SQLSETTINGS_DRIVERNAME: postgres
-            MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:3waf8z6q15rm@db:5432/mattermost?sslmode=disable
+            MM_SQLSETTINGS_DATASOURCE: postgres://{{ mattermost_db_user }}:{{ mattermost_db_password }}@db:5432/{{ mattermost_db_name }}?sslmode=disable
             MM_SERVICESETTINGS_SITEURL: http://localhost:8065
 
 - name: Start Mattermost using Docker Compose
