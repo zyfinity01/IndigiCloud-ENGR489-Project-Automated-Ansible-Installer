@@ -1,0 +1,84 @@
+---
+# Enable UFW
+- name: Enable UFW with default deny incoming policy
+  community.general.ufw:
+    state: enabled
+    direction: incoming
+    policy: deny
+
+# Set default outgoing policy to allow
+- name: Allow outgoing traffic
+  community.general.ufw:
+    state: enabled
+    direction: outgoing
+    policy: allow
+
+# Allow SSH
+- name: Allow SSH traffic
+  community.general.ufw:
+    rule: allow
+    port: 22
+    proto: tcp
+
+# Allow HTTP and HTTPS for NGINX reverse proxy
+- name: Allow HTTP traffic for NGINX reverse proxy
+  community.general.ufw:
+    rule: allow
+    port: 80
+    proto: tcp
+
+- name: Allow HTTPS traffic for NGINX reverse proxy
+  community.general.ufw:
+    rule: allow
+    port: 443
+    proto: tcp
+
+# Allow Jitsi Meet media traffic (UDP 10000)
+- name: Allow Jitsi Meet media traffic (UDP 10000)
+  community.general.ufw:
+    rule: allow
+    port: 10000
+    proto: udp
+
+# Allow iRedMail email ports
+- name: Allow SMTP (Port 25)
+  community.general.ufw:
+    rule: allow
+    port: 25
+    proto: tcp
+
+- name: Allow IMAP (Port 143)
+  community.general.ufw:
+    rule: allow
+    port: 143
+    proto: tcp
+
+- name: Allow SMTPS (Port 465)
+  community.general.ufw:
+    rule: allow
+    port: 465
+    proto: tcp
+
+- name: Allow Submission (Port 587)
+  community.general.ufw:
+    rule: allow
+    port: 587
+    proto: tcp
+
+- name: Allow IMAPS (Port 993)
+  community.general.ufw:
+    rule: allow
+    port: 993
+    proto: tcp
+
+# Allow SMB port for file sharing
+- name: Allow SMB traffic for file sharing (Port 445)
+  community.general.ufw:
+    rule: allow
+    port: 445
+    proto: tcp
+
+# Reload UFW to apply changes
+- name: Reload UFW to apply changes
+  community.general.ufw:
+    state: reloaded

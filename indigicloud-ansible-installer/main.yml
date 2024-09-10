@@ -40,3 +40,4 @@
     - silverstripe
     - cloudflare
     - nginx_certbot
+    - ufw_firewall
