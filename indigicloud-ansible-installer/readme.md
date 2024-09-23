@@ -4,6 +4,9 @@ This document serves as a guide for setting up and using the Ansible playbook fo
 
 ## Prerequisites
 Ensure that you are running an Ubuntu distribution - This setup is designed to be run on Ubuntu-24.04 LTS which is set to be officially supported until april 2034.
+
+This playbook also ensures that you are able to copy and place this Ansible playbook folder within a directory, either by downloading it as a .ZIP file or by cloning the repository locally.
+
 ## Configuration Instructions
 
 ### Editing `global_vars.yml`
