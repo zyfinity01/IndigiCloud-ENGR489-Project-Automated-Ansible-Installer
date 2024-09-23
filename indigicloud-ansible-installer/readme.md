@@ -3,9 +3,9 @@
 This document serves as a guide for setting up and using the Ansible playbook for the IndigiCloud project. Follow the instructions below to configure the playbook correctly and understand what variables to change and why.
 
 ## Prerequisites
-Ensure that you are running an Ubuntu distribution - This setup is designed to be run on Ubuntu-24.04 LTS which is set to be officially supported until april 2034.
+- Ensure that you are running an Ubuntu distribution - This setup is designed to be run on Ubuntu-24.04 LTS which is set to be officially supported until april 2034.
 
-This playbook also ensures that you are able to copy and place this Ansible playbook folder within a directory, either by downloading it as a .ZIP file or by cloning the repository locally.
+- This playbook also ensures that you are able to copy and place this Ansible playbook folder within a directory, either by downloading it as a .ZIP file or by cloning the repository locally.
 
 ## Configuration Instructions
 
